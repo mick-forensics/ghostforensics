@@ -1,0 +1,32 @@
+{
+  "category": "Job scam patterns",
+  "indicators": [
+    "no interview required",
+    "without an interview",
+    "interview is not required",
+    "no need for interview",
+    "hired without interview",
+    "remote job",
+    "work from home",
+    "work-from-home",
+    "data entry",
+    "virtual assistant",
+    "personal assistant",
+    "equipment check",
+    "training check",
+    "start immediately",
+    "payroll setup",
+    "set up payroll",
+    "payroll department",
+    "hr portal",
+    "employment verification form",
+    "w-4 form",
+    "w4 form",
+    "i-9 form",
+    "i9 form",
+    "onboarding form"
+  ],
+  "riskWeight": 24,
+  "explanation": "Fake job offers often promise fast remote work, skip normal interviews, or ask for onboarding details before the employer is verified.",
+  "recommendation": "Verify the company on its official website, use the official careers page, and do not send payroll or identity details to an unverified recruiter."
+}

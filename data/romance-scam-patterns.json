@@ -1,0 +1,25 @@
+{
+  "category": "Romance Scam",
+  "indicators": [
+    "oil rig",
+    "offshore",
+    "engineer on a rig",
+    "north sea",
+    "missionary",
+    "doctor abroad",
+    "military overseas",
+    "i saw your profile and couldn't stop thinking about you",
+    "i feel like we have a real connection",
+    "i don't have many people to talk to",
+    "meet you when i get back",
+    "small favor",
+    "emergency satellite",
+    "emergency phone credits",
+    "i promise i will pay you back",
+    "i know this is random but"
+  ],
+  "minimumMatches": 2,
+  "riskWeight": 85,
+  "explanation": "Romance scammers build emotional connection over days or weeks before asking for money. Victims lose an average of $10,000+. Never send money to someone you have not met in person.",
+  "recommendation": "Stop all contact immediately. Do not send money under any circumstances, even if the story seems real and emotional. Report the profile to the platform. You can report romance scams to the FTC at reportfraud.ftc.gov."
+}

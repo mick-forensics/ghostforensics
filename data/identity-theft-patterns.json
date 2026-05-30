@@ -1,0 +1,25 @@
+{
+  "category": "Identity theft patterns",
+  "indicators": [
+    "id picture",
+    "photo id",
+    "picture of your id",
+    "photo of your id",
+    "identity document",
+    "driver's license",
+    "drivers license",
+    "passport",
+    "social security",
+    "ssn",
+    "national id",
+    "date of birth",
+    "full name",
+    "phone number",
+    "email address",
+    "address",
+    "copy of your id"
+  ],
+  "riskWeight": 26,
+  "explanation": "Requests for ID photos, Social Security numbers, passports, or similar documents can lead to identity theft.",
+  "recommendation": "Do not upload identity documents until you confirm the request through an official, trusted channel."
+}

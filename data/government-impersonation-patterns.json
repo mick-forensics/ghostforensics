@@ -1,0 +1,28 @@
+{
+  "category": "Government Impersonation Scam",
+  "indicators": [
+    "internal revenue service",
+    "irs",
+    "social security administration",
+    "ssa",
+    "medicare",
+    "fbi",
+    "dea",
+    "immigration",
+    "uscis",
+    "warrant has been issued for your arrest",
+    "avoid immediate legal action",
+    "this is your final warning",
+    "criminal charges",
+    "legal action",
+    "settle your balance",
+    "irs-",
+    "ssa-",
+    "medicare-",
+    "fbi-"
+  ],
+  "minimumMatches": 2,
+  "riskWeight": 90,
+  "explanation": "Government agencies like the IRS never demand immediate payment by phone, never threaten arrest for unpaid taxes, and never accept gift cards or wire transfers as payment. If you receive this type of message, hang up and call the official agency number directly.",
+  "recommendation": "The IRS and other government agencies never demand immediate payment by phone, never threaten arrest for unpaid taxes, and never accept gift cards. Hang up and call the official agency number directly to verify any real notices."
+}

@@ -1,0 +1,24 @@
+{
+  "category": "Delivery and Smishing Scam",
+  "indicators": [
+    "usps",
+    "fedex",
+    "ups",
+    "dhl",
+    "your package has been suspended",
+    "incomplete address",
+    "delivery attempt unsuccessful",
+    "pay a redelivery fee",
+    "small fee",
+    "usps-",
+    "fedex-",
+    "ups-",
+    "dhl-",
+    "click here to update your shipping details",
+    "package returned to sender"
+  ],
+  "minimumMatches": 2,
+  "riskWeight": 85,
+  "explanation": "Real delivery companies never charge redelivery fees by clicking a link in a text or email. Small fees like $2.99 are designed to capture your credit card details. Always track packages directly on the official carrier website.",
+  "recommendation": "Do not click the link. Go directly to the official carrier website (usps.com, fedex.com, ups.com) and enter your tracking number there. Real carriers never charge redelivery fees through SMS or email links."
+}

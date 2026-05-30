@@ -1,0 +1,26 @@
+{
+  "category": "Investment Scam",
+  "indicators": [
+    "guaranteed returns",
+    "guaranteed profit",
+    "30% weekly",
+    "double your money",
+    "10x returns",
+    "private group",
+    "private trading group",
+    "vip group",
+    "my mentor helped me",
+    "register through my link",
+    "minimum deposit to activate your account",
+    "turned $500 into $14,000",
+    "crypto investment",
+    "bitcoin investment",
+    "online relationship",
+    "mentor",
+    "minimum deposit"
+  ],
+  "minimumMatches": 2,
+  "riskWeight": 70,
+  "explanation": "Investment scams often promise guaranteed returns, private trading access, or unusually high profits, especially around crypto. Real investments carry risk and are never guaranteed.",
+  "recommendation": "Do not deposit money through links from strangers or private groups. Verify any investment professional independently and avoid crypto offers that promise guaranteed returns."
+}

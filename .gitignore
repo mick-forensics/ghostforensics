@@ -1,0 +1,62 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# API keys, tokens, and local credentials
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.csr
+*.jks
+*.keystore
+*api_key*
+*apikey*
+*secret*
+*token*
+credentials.json
+secrets.json
+
+# Dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary files and caches
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Build and runtime output
+dist/
+build/
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# VS Code local settings
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json

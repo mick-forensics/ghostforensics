@@ -1,0 +1,20 @@
+{
+  "category": "Tech Support Scam",
+  "indicators": [
+    "microsoft has detected",
+    "apple has detected",
+    "google has detected",
+    "your computer has been infected",
+    "do not shut down your computer",
+    "certified technician",
+    "remote support",
+    "call our toll-free number immediately",
+    "we will remove the virus remotely",
+    "one-time fee",
+    "your data is at risk"
+  ],
+  "minimumMatches": 2,
+  "riskWeight": 85,
+  "explanation": "Microsoft, Apple, and Google never contact users about viruses by phone or email. Never allow remote access to your computer from an unsolicited contact. Never pay a tech support fee with gift cards.",
+  "recommendation": "Do not call the number. Do not allow remote access to your computer. Hang up immediately if you are on the phone. Run a scan with your existing antivirus software. Microsoft, Apple, and Google never contact users this way."
+}

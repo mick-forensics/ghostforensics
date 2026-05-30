@@ -1,0 +1,20 @@
+{
+  "category": "Lottery and Advance Fee Scam",
+  "indicators": [
+    "you have been selected as a winner",
+    "your email was randomly chosen",
+    "processing fee to claim your prize",
+    "administration fee",
+    "release fee",
+    "transfer fee",
+    "pay a fee to receive your winnings",
+    "lottery",
+    "sweepstakes",
+    "international prize",
+    "you have won"
+  ],
+  "minimumMatches": 2,
+  "riskWeight": 90,
+  "explanation": "Legitimate lotteries and prizes never require you to pay a fee to claim winnings. If you did not enter a contest, you cannot have won it. Pay to receive money is always a scam.",
+  "recommendation": "You cannot win a lottery you did not enter. No legitimate prize requires a fee to claim. Stop all contact and do not send any money."
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GhostForensics Scam Analyzer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero" aria-labelledby="app-title">
+      <div>
+        <p class="eyebrow">GhostForensics</p>
+        <h1 id="app-title">Scam Analyzer</h1>
+        <p class="intro">
+          Paste a suspicious message, sender email, and website to check for common scam warning signs.
+        </p>
+      </div>
+      <div class="status-chip" aria-label="Educational scanner status">
+        <span class="pulse"></span>
+        Scanner Ready
+      </div>
+    </section>
+
+    <form class="analysis-form" id="analysisForm">
+      <label for="caseType">
+        Case type
+        <select id="caseType" name="caseType">
+          <option value="job offer">Job offer</option>
+          <option value="email">Email</option>
+          <option value="text message">Text message</option>
+          <option value="marketplace">Marketplace</option>
+          <option value="investment">Investment</option>
+          <option value="unknown" selected>Unknown</option>
+        </select>
+      </label>
+
+      <label for="messageText">
+        Suspicious message
+        <textarea id="messageText" name="messageText" rows="8" placeholder="Paste the message here..."></textarea>
+      </label>
+
+      <div class="field-grid">
+        <label for="emailInput">
+          Email address
+          <input id="emailInput" name="emailInput" type="email" placeholder="sender@example.com">
+        </label>
+
+        <label for="urlInput">
+          URL or domain
+          <input id="urlInput" name="urlInput" type="text" placeholder="example.com or https://example.com">
+        </label>
+      </div>
+
+      <button type="submit">Analyze Risk</button>
+    </form>
+
+    <section class="results" id="results" aria-live="polite">
+      <article class="score-card">
+        <div>
+          <p class="card-label">Risk score</p>
+          <strong id="riskScore">0</strong>
+          <span>/ 100</span>
+        </div>
+        <div class="meter" aria-hidden="true">
+          <div id="meterFill"></div>
+        </div>
+        <p class="risk-level low" id="riskLevel">Low</p>
+      </article>
+
+      <article class="result-card">
+        <h2>Most Likely Scam Type</h2>
+        <ul id="scamTypeList">
+          <li>No scan yet. The analyzer will estimate the scam type after you submit details.</li>
+        </ul>
+      </article>
+
+      <article class="result-card">
+        <h2>Red flags found</h2>
+        <ul id="flagsList">
+          <li>No scan yet. Add details above and tap Analyze Risk.</li>
+        </ul>
+      </article>
+
+      <article class="result-card">
+        <h2>Safe next steps</h2>
+        <ul id="stepsList">
+          <li>Do not send money, passwords, or verification codes until you verify the sender independently.</li>
+        </ul>
+      </article>
+
+      <article class="result-card">
+        <h2>Why this matters</h2>
+        <ul id="whyList">
+          <li>Scam messages can lead to identity theft, financial loss, or fake onboarding traps.</li>
+        </ul>
+      </article>
+
+      <p class="disclaimer">Educational risk analysis only, not legal advice. For confirmed fraud, report to FTC at reportfraud.ftc.gov or call your bank immediately.</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "category": "Rental Scam",
+  "indicators": [
+    "missionary in ghana",
+    "abroad",
+    "overseas",
+    "rental",
+    "rent",
+    "apartment",
+    "unit",
+    "cannot show the unit in person",
+    "can't show the unit in person",
+    "will mail you the keys once you pay",
+    "first month and security deposit",
+    "employment information for background check",
+    "fully furnished, utilities included, pet friendly",
+    "gmail.com"
+  ],
+  "minimumMatches": 3,
+  "riskWeight": 85,
+  "explanation": "Legitimate landlords always allow property viewings before accepting payment. Never pay rent or a deposit without seeing the property in person or through a verified agent. Never send deposit via Zelle or Cash App.",
+  "recommendation": "Never pay rent or a deposit without viewing the property in person or through a licensed agent. Legitimate landlords do not ask for payment before showing the unit. Report to the platform where the listing appeared."
+}
