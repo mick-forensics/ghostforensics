@@ -850,11 +850,38 @@ function analyzeScam({ caseType, message, email, url }) {
 }
 
 function findMatchedIndicators(indicators, text) {
-  return indicators.filter((indicator) => text.includes(indicator.toLowerCase()));
+  return indicators.filter((indicator) => matchesIndicator(text, indicator));
+}
+
+function matchesIndicator(text, indicator) {
+  const normalizedText = String(text || "").toLowerCase();
+  const normalizedIndicator = String(indicator || "").trim().toLowerCase();
+
+  if (!normalizedIndicator) {
+    return false;
+  }
+
+  const escapedIndicator = escapeRegex(normalizedIndicator);
+  const isSingleWordOrAcronym = /^[a-z0-9]+$/i.test(normalizedIndicator);
+  const pattern = isSingleWordOrAcronym ? `\\b${escapedIndicator}\\b` : escapedIndicator;
+
+  return new RegExp(pattern, "i").test(normalizedText);
+}
+
+function matchesAnyIndicator(text, indicators) {
+  return indicators.some((indicator) => matchesIndicator(text, indicator));
+}
+
+function countMatchedIndicators(text, indicators) {
+  return indicators.filter((indicator) => matchesIndicator(text, indicator)).length;
+}
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function hasJobOfferSignal(caseType, text) {
-  return caseType === "job offer" || text.includes("job") || text.includes("position") || text.includes("hiring");
+  return caseType === "job offer" || matchesAnyIndicator(text, ["job", "position", "hiring"]);
 }
 
 function hasIndicator(matchedIndicatorSet, indicators) {
@@ -862,23 +889,23 @@ function hasIndicator(matchedIndicatorSet, indicators) {
 }
 
 function hasIdentityBundleRequest(text) {
-  const hasFullName = text.includes("full name") || text.includes("complete name") || text.includes("legal name");
-  const hasPhone = text.includes("phone") || text.includes("mobile number") || text.includes("cell number");
-  const hasEmail = text.includes("email") || text.includes("e-mail");
+  const hasFullName = matchesAnyIndicator(text, ["full name", "complete name", "legal name"]);
+  const hasPhone = matchesAnyIndicator(text, ["phone", "mobile number", "cell number"]);
+  const hasEmail = matchesAnyIndicator(text, ["email", "e-mail"]);
 
   return hasFullName && hasPhone && hasEmail;
 }
 
 function hasMilitaryOrOverseasPaymentPattern(text, matchedIndicatorSet) {
-  const hasMilitarySignal = ["deployed overseas", "us army", "military", "military overseas"].some((indicator) => text.includes(indicator));
-  const cannotMeet = ["can't meet in person", "cant meet in person", "cannot meet in person"].some((indicator) => text.includes(indicator));
+  const hasMilitarySignal = matchesAnyIndicator(text, ["deployed overseas", "us army", "military", "military overseas"]);
+  const cannotMeet = matchesAnyIndicator(text, ["can't meet in person", "cant meet in person", "cannot meet in person"]);
   const hasOverpayment = hasIndicator(matchedIndicatorSet, ["paying extra for trouble", "paying extra", "overpayment", "over paid", "overpaid"]);
 
   return (hasMilitarySignal || cannotMeet) && (hasOverpayment || hasPaymentRequest(text, matchedIndicatorSet));
 }
 
 function hasGodBlessPaymentPattern(text, matchedIndicatorSet) {
-  return text.includes("god bless") && hasPaymentRequest(text, matchedIndicatorSet);
+  return matchesIndicator(text, "god bless") && hasPaymentRequest(text, matchedIndicatorSet);
 }
 
 function hasPaymentRequest(text, matchedIndicatorSet) {
@@ -911,7 +938,7 @@ function hasPaymentRequest(text, matchedIndicatorSet) {
     "online banking"
   ];
 
-  return hasIndicator(matchedIndicatorSet, paymentIndicators) || paymentIndicators.some((indicator) => text.includes(indicator));
+  return hasIndicator(matchedIndicatorSet, paymentIndicators) || matchesAnyIndicator(text, paymentIndicators);
 }
 
 function detectStrongCategorySignal({ text, email, url, matchedIndicatorSet }) {
@@ -971,23 +998,23 @@ function detectStrongCategorySignal({ text, email, url, matchedIndicatorSet }) {
 }
 
 function hasGovernmentAgency(text) {
-  return ["internal revenue service", "irs", "social security administration", "ssa", "medicare", "fbi", "dea", "immigration", "uscis"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["internal revenue service", "irs", "social security administration", "ssa", "medicare", "fbi", "dea", "immigration", "uscis"]);
 }
 
 function hasArrestOrLegalThreat(text) {
-  return ["warrant has been issued", "arrest", "avoid immediate legal action", "this is your final warning", "criminal charges", "legal action"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["warrant has been issued", "arrest", "avoid immediate legal action", "this is your final warning", "criminal charges", "legal action"]);
 }
 
 function hasGiftCardOrWirePayment(text, matchedIndicatorSet) {
-  return hasIndicator(matchedIndicatorSet, ["gift card", "itunes gift card", "itunes card", "wire", "wire transfer"]) || ["gift card", "itunes gift card", "itunes card", "wire", "wire transfer"].some((indicator) => text.includes(indicator));
+  return hasIndicator(matchedIndicatorSet, ["gift card", "itunes gift card", "itunes card", "wire", "wire transfer"]) || matchesAnyIndicator(text, ["gift card", "itunes gift card", "itunes card", "wire", "wire transfer"]);
 }
 
 function hasLotteryWinClaim(text) {
-  return ["you have been selected as a winner", "your email was randomly chosen", "lottery", "sweepstakes", "international prize", "you have won"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["you have been selected as a winner", "your email was randomly chosen", "lottery", "sweepstakes", "international prize", "you have won"]);
 }
 
 function hasAdvanceFee(text) {
-  return ["processing fee", "processing fee to claim your prize", "administration fee", "release fee", "transfer fee", "pay a fee to receive your winnings", "fee to claim"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["processing fee", "processing fee to claim your prize", "administration fee", "release fee", "transfer fee", "pay a fee to receive your winnings", "fee to claim"]);
 }
 
 function hasHighRiskInvestmentPattern(text) {
@@ -1007,51 +1034,51 @@ function hasHighRiskInvestmentPattern(text) {
     "minimum deposit"
   ];
   const pigButcheringSignals = ["online relationship", "crypto", "crypto investment", "bitcoin", "guaranteed returns", "guaranteed profit"];
-  const investmentMatchCount = investmentSignals.filter((indicator) => text.includes(indicator)).length;
-  const hasPigButcheringPattern = (text.includes("online relationship") || text.includes("relationship")) && (text.includes("crypto") || text.includes("bitcoin")) && (text.includes("guaranteed returns") || text.includes("guaranteed profit"));
+  const investmentMatchCount = countMatchedIndicators(text, investmentSignals);
+  const hasPigButcheringPattern = matchesAnyIndicator(text, ["online relationship", "relationship"]) && matchesAnyIndicator(text, ["crypto", "bitcoin"]) && matchesAnyIndicator(text, ["guaranteed returns", "guaranteed profit"]);
 
-  return investmentMatchCount >= 3 || hasPigButcheringPattern || pigButcheringSignals.filter((indicator) => text.includes(indicator)).length >= 4;
+  return investmentMatchCount >= 3 || hasPigButcheringPattern || countMatchedIndicators(text, pigButcheringSignals) >= 4;
 }
 
 function hasDeliveryCarrier(text) {
-  return ["usps", "fedex", "ups", "dhl"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["usps", "fedex", "ups", "dhl"]);
 }
 
 function hasSmallDeliveryFee(text) {
-  return text.includes("pay a redelivery fee") || text.includes("small fee") || /\$\s?\d{1,2}(?:\.\d{2})?/.test(text);
+  return matchesAnyIndicator(text, ["pay a redelivery fee", "small fee"]) || /\$\s?\d{1,2}(?:\.\d{2})?/.test(text);
 }
 
 function hasTechCompanyImpersonation(text) {
-  return ["microsoft has detected", "apple has detected", "google has detected", "microsoft", "apple", "google", "norton", "mcafee"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["microsoft has detected", "apple has detected", "google has detected", "microsoft", "apple", "google", "norton", "mcafee"]);
 }
 
 function hasPhoneNumber(text) {
-  return text.includes("toll-free") || text.includes("toll free") || /(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}/.test(text);
+  return matchesAnyIndicator(text, ["toll-free", "toll free"]) || /(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}/.test(text);
 }
 
 function hasRemoteSupportOrInfectionSignal(text) {
-  return ["remote access", "remote support", "remove the virus remotely", "your computer has been infected", "virus detected", "do not shut down your computer", "your data is at risk"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["remote access", "remote support", "remove the virus remotely", "your computer has been infected", "virus detected", "do not shut down your computer", "your data is at risk"]);
 }
 
 function hasRentalLanguage(text) {
-  return ["rental", "rent", "apartment", "unit", "landlord", "lease", "property"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["rental", "rent", "apartment", "unit", "landlord", "lease", "property"]);
 }
 
 function hasOverseasLandlordSignal(text) {
-  return ["missionary in ghana", "abroad", "overseas"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["missionary in ghana", "abroad", "overseas"]);
 }
 
 function hasCannotShowPropertySignal(text) {
-  return ["cannot show the unit in person", "can't show the unit in person", "cannot show the property", "can't show the property", "will mail you the keys once you pay"].some((indicator) => text.includes(indicator));
+  return matchesAnyIndicator(text, ["cannot show the unit in person", "can't show the unit in person", "cannot show the property", "can't show the property", "will mail you the keys once you pay"]);
 }
 
 function hasRentalPaymentRequest(text, matchedIndicatorSet) {
-  return hasIndicator(matchedIndicatorSet, ["zelle", "cash app", "wire", "wire transfer", "deposit", "first month and security deposit"]) || ["zelle", "cash app", "wire", "wire transfer", "deposit", "first month and security deposit"].some((indicator) => text.includes(indicator));
+  return hasIndicator(matchedIndicatorSet, ["zelle", "cash app", "wire", "wire transfer", "deposit", "first month and security deposit"]) || matchesAnyIndicator(text, ["zelle", "cash app", "wire", "wire transfer", "deposit", "first month and security deposit"]);
 }
 
 function hasRomanceOccupationSignal(text) {
-  const occupationSignal = ["oil rig", "offshore", "engineer on a rig", "north sea", "missionary", "doctor abroad", "military overseas", "deployed overseas"].some((indicator) => text.includes(indicator));
-  const oilRigEngineer = text.includes("oil rig") && text.includes("engineer");
+  const occupationSignal = matchesAnyIndicator(text, ["oil rig", "offshore", "engineer on a rig", "north sea", "missionary", "doctor abroad", "military overseas", "deployed overseas"]);
+  const oilRigEngineer = matchesIndicator(text, "oil rig") && matchesIndicator(text, "engineer");
 
   return occupationSignal || oilRigEngineer;
 }
@@ -1070,7 +1097,7 @@ function hasRomanceEmotionalManipulation(text) {
     "love",
     "relationship",
     "my dear"
-  ].some((indicator) => text.includes(indicator)) || (text.includes("oil rig") && text.includes("engineer"));
+  ].some((indicator) => matchesIndicator(text, indicator)) || (matchesIndicator(text, "oil rig") && matchesIndicator(text, "engineer"));
 }
 
 function getCategoryRecommendation(categoryName) {
@@ -1144,7 +1171,7 @@ function determineScamCategory(text, caseType, matchedCategories, matchedIndicat
   }
 
   const categoryScores = scamCategoryProfiles.map((profile) => {
-    let score = profile.indicators.filter((indicator) => text.includes(indicator)).length * 10;
+    let score = countMatchedIndicators(text, profile.indicators) * 10;
 
     if (matchedCategories.includes(profile.name)) {
       score += 35;
@@ -1268,7 +1295,7 @@ function analyzeBrandImpersonation(email, url, text) {
     "do not shut down your computer",
     "delivery attempt unsuccessful",
     "incomplete address"
-  ].some((indicator) => text.includes(indicator));
+  ].some((indicator) => matchesIndicator(text, indicator));
 
   if (suspiciousDomains.length === 0 && !phishingLanguage) {
     return null;
