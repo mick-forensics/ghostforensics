@@ -1,0 +1,35 @@
+GHOSTFORENSICS — SCAM RISK ANALYSIS
+=====================================
+Case #[NUMERO] | Date: [FECHA]
+
+RISK LEVEL: [HIGH / MEDIUM / LOW]
+Score: [SCORE] / 100
+Category: [CATEGORIA]
+
+-------------------------------------
+RED FLAGS FOUND:
+
+- [RED_FLAG_1]
+- [RED_FLAG_2]
+- [RED_FLAG_3]
+
+-------------------------------------
+WHY THIS MATTERS:
+
+[EXPLICACION_SIMPLE_2_3_ORACIONES]
+
+-------------------------------------
+WHAT TO DO NOW:
+
+1. [PASO_1]
+2. [PASO_2]
+3. [PASO_3]
+
+-------------------------------------
+DISCLAIMER:
+This analysis is educational and preventive.
+It does not replace legal or financial advice.
+For confirmed fraud: reportfraud.ftc.gov
+
+GhostForensics | mick-forensics.github.io/ghostforensics
+=====================================
