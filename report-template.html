@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GhostForensics — Risk Analysis Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; background: #fff; padding: 40px; max-width: 780px; margin: auto; }
+  .header { border-bottom: 2px solid #1a1a1a; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+  .brand-name { font-size: 20px; font-weight: bold; letter-spacing: -0.5px; }
+  .brand-sub { font-size: 11px; color: #666; margin-top: 2px; }
+  .meta { text-align: right; font-size: 11px; color: #666; line-height: 1.9; }
+  .report-title { margin-bottom: 24px; }
+  .report-title h1 { font-size: 17px; font-weight: bold; }
+  .report-title p { font-size: 12px; color: #555; margin-top: 4px; }
+  .risk-banner { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 8px; border: 1.5px solid #c0392b; background: #fdf0ee; margin-bottom: 28px; }
+  .risk-circle { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #c0392b; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+  .risk-num { font-size: 20px; font-weight: bold; color: #c0392b; line-height: 1; }
+  .risk-max { font-size: 10px; color: #999; }
+  .risk-level { font-size: 15px; font-weight: bold; color: #c0392b; }
+  .risk-category { font-size: 12px; color: #555; margin-top: 3px; }
+  .risk-confidence { font-size: 11px; color: #888; margin-top: 4px; }
+  .section { margin-bottom: 24px; }
+  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #e0e0e0; }
+  .section-num { font-size: 10px; font-weight: bold; color: #888; background: #f5f5f5; padding: 2px 7px; border-radius: 4px; }
+  .section-title { font-size: 13px; font-weight: bold; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .info-item { background: #f8f8f8; border-radius: 6px; padding: 10px 12px; }
+  .info-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px; }
+  .info-value { font-size: 12px; font-weight: bold; word-break: break-all; }
+  .flag-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 6px; border: 1px solid #e8e8e8; margin-bottom: 6px; }
+  .flag-dot { width: 8px; height: 8px; border-radius: 50%; background: #c0392b; flex-shrink: 0; margin-top: 4px; }
+  .flag-title { font-size: 12px; font-weight: bold; margin-bottom: 3px; }
+  .flag-desc { font-size: 11px; color: #555; line-height: 1.5; }
+  .flag-match { font-size: 10px; color: #888; margin-top: 3px; font-style: italic; }
+  .ioc-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .ioc-table th { text-align: left; font-size: 10px; font-weight: bold; color: #888; text-transform: uppercase; letter-spacing: 0.05em; padding: 7px 8px; border-bottom: 1px solid #e0e0e0; background: #f8f8f8; }
+  .ioc-table td { padding: 7px 8px; border-bottom: 1px solid #f0f0f0; color: #444; vertical-align: top; }
+  .badge { display: inline-block; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 20px; }
+  .badge-red { background: #fdf0ee; color: #c0392b; border: 1px solid #e8b4ae; }
+  .badge-amber { background: #fdf6ec; color: #b7770d; border: 1px solid #e8d4a4; }
+  .badge-green { background: #eefaf4; color: #1e8449; border: 1px solid #a4d4b8; }
+  .analysis-box { background: #f8f8f8; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #c0392b; }
+  .analysis-box p { font-size: 12px; color: #444; line-height: 1.7; }
+  .steps-list { display: flex; flex-direction: column; gap: 6px; }
+  .step-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 12px; border-radius: 6px; background: #f8f8f8; }
+  .step-num { width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; flex-shrink: 0; color: #555; }
+  .step-text { font-size: 12px; color: #444; line-height: 1.5; padding-top: 2px; }
+  .disclaimer { border-top: 1px solid #e0e0e0; padding-top: 16px; margin-top: 24px; }
+  .disclaimer p { font-size: 11px; color: #888; line-height: 1.7; }
+  @media print {
+    body { padding: 20px; }
+    .risk-banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .flag-item, .info-item, .step-item, .analysis-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="brand-name">GhostForensics</div>
+    <div class="brand-sub">Digital Risk Analysis</div>
+  </div>
+  <div class="meta">
+    Report #[NUMERO_REPORTE]<br>
+    Date: [FECHA]<br>
+    Analyst: mick-forensics<br>
+    Confidential — Client Use Only
+  </div>
+</div>
+
+<div class="report-title">
+  <h1>Digital Scam Risk Analysis Report</h1>
+  <p>Prepared for: [NOMBRE_CLIENTE] &nbsp;|&nbsp; Case type: [TIPO_CASO]</p>
+</div>
+
+<div class="risk-banner">
+  <div class="risk-circle">
+    <div class="risk-num">[SCORE]</div>
+    <div class="risk-max">/100</div>
+  </div>
+  <div>
+    <div class="risk-level">⚠ [NIVEL_RIESGO] Risk</div>
+    <div class="risk-category">Category: <strong>[CATEGORIA]</strong></div>
+    <div class="risk-confidence">Confidence: [CONFIANZA]% &nbsp;·&nbsp; [RESUMEN_FLAGS]</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Case information</span>
+  </div>
+  <div class="info-grid">
+    <div class="info-item"><div class="info-label">Sender email</div><div class="info-value">[EMAIL_ANALIZADO]</div></div>
+    <div class="info-item"><div class="info-label">Domain / URL</div><div class="info-value">[DOMINIO_ANALIZADO]</div></div>
+    <div class="info-item"><div class="info-label">Case type</div><div class="info-value">[TIPO_CASO]</div></div>
+    <div class="info-item"><div class="info-label">Analysis date</div><div class="info-value">[FECHA]</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Red flags detected</span>
+  </div>
+  <div class="flag-item">
+    <div class="flag-dot"></div>
+    <div>
+      <div class="flag-title">[RED_FLAG_1_TITULO]</div>
+      <div class="flag-desc">[RED_FLAG_1_DESC]</div>
+      <div class="flag-match">Matched: [RED_FLAG_1_MATCH]</div>
+    </div>
+  </div>
+  <div class="flag-item">
+    <div class="flag-dot"></div>
+    <div>
+      <div class="flag-title">[RED_FLAG_2_TITULO]</div>
+      <div class="flag-desc">[RED_FLAG_2_DESC]</div>
+      <div class="flag-match">Matched: [RED_FLAG_2_MATCH]</div>
+    </div>
+  </div>
+  <div class="flag-item">
+    <div class="flag-dot"></div>
+    <div>
+      <div class="flag-title">[RED_FLAG_3_TITULO]</div>
+      <div class="flag-desc">[RED_FLAG_3_DESC]</div>
+      <div class="flag-match">Matched: [RED_FLAG_3_MATCH]</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Indicators of compromise (IOC)</span>
+  </div>
+  <table class="ioc-table">
+    <thead>
+      <tr>
+        <th>Indicator</th>
+        <th>Type</th>
+        <th>Risk</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>[IOC_1_VALOR]</td>
+        <td>[IOC_1_TIPO]</td>
+        <td><span class="badge badge-red">High</span></td>
+        <td>[IOC_1_NOTA]</td>
+      </tr>
+      <tr>
+        <td>[IOC_2_VALOR]</td>
+        <td>[IOC_2_TIPO]</td>
+        <td><span class="badge badge-amber">Medium</span></td>
+        <td>[IOC_2_NOTA]</td>
+      </tr>
+      <tr>
+        <td>[IOC_3_VALOR]</td>
+        <td>[IOC_3_TIPO]</td>
+        <td><span class="badge badge-amber">Medium</span></td>
+        <td>[IOC_3_NOTA]</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Analyst assessment</span>
+  </div>
+  <div class="analysis-box">
+    <p>[ANALYST_ASSESSMENT]</p>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">Recommended actions</span>
+  </div>
+  <div class="steps-list">
+    <div class="step-item"><div class="step-num">1</div><div class="step-text">[PASO_1]</div></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-text">[PASO_2]</div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-text">[PASO_3]</div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-text">[PASO_4]</div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-text">For confirmed fraud: report to FTC at reportfraud.ftc.gov or contact your bank immediately.</div></div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  <p>This report is educational and preventive. It does not replace legal, financial, or official cybersecurity advice. Analysis performed using GhostForensics Digital Risk Analyzer.</p>
+  <p style="margin-top: 4px;">GhostForensics &nbsp;·&nbsp; mick-forensics.github.io/ghostforensics &nbsp;·&nbsp; Analyst: mick-forensics</p>
+</div>
+
+</body>
+</html>
