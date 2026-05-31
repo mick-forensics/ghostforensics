@@ -733,6 +733,10 @@ function analyzeScam({ caseType, message, email, url }) {
       return;
     }
 
+    if (entry.category === "Rental Scam" && !hasRentalScamEvidence(analysisText)) {
+      return;
+    }
+
     score += Number(entry.riskWeight) || 0;
     matchedCategories.push(entry.category);
     matchedRecommendations.add(entry.recommendation);
@@ -789,10 +793,18 @@ function analyzeScam({ caseType, message, email, url }) {
     flags.push("Bundled personal information request: Asking for full name, phone number, and email together can be used to build an identity theft profile.");
   }
 
-  if (hasMilitaryOrOverseasPaymentPattern(analysisText, matchedIndicatorSet)) {
+  const militaryOrOverseasPaymentPattern = hasMilitaryOrOverseasPaymentPattern(analysisText, matchedIndicatorSet);
+
+  if (militaryOrOverseasPaymentPattern) {
     score += 22;
     matchedCategories.push("Payment red flags");
     flags.push("Military or overseas payment pattern: Deployment, military identity, inability to meet, or overpayment language combined with payment pressure is a common scam setup.");
+  }
+
+  if (caseType === "marketplace" && militaryOrOverseasPaymentPattern) {
+    score += 20;
+    matchedCategories.push("Marketplace Scam");
+    flags.push("Marketplace military payment pattern: Marketplace sale language combined with deployment or overseas identity and payment pressure is a high-risk buyer or seller scam.");
   }
 
   if (hasGodBlessPaymentPattern(analysisText, matchedIndicatorSet)) {
@@ -804,7 +816,9 @@ function analyzeScam({ caseType, message, email, url }) {
   const strongCategorySignal = detectStrongCategorySignal({ text: analysisText, email, url, matchedIndicatorSet });
 
   if (strongCategorySignal) {
-    score = Math.max(score, strongCategorySignal.minimumScore);
+    if (matchedIndicatorSet.size >= 3) {
+      score = Math.max(score, strongCategorySignal.minimumScore);
+    }
     matchedCategories.push(strongCategorySignal.name);
     matchedRecommendations.add(getCategoryRecommendation(strongCategorySignal.name));
     flags.push(strongCategorySignal.flag);
@@ -836,7 +850,7 @@ function analyzeScam({ caseType, message, email, url }) {
   }
 
   const scamType = determineScamCategory(analysisText, caseType, matchedCategories, matchedIndicatorSet, strongCategorySignal);
-  score = enforceConfidenceRiskFloor(score, scamType, flags);
+  score = enforceMinimumEvidenceThreshold(score, matchedIndicatorSet, strongCategorySignal, flags);
   score = clampScore(score);
 
   return {
@@ -862,8 +876,11 @@ function matchesIndicator(text, indicator) {
   }
 
   const escapedIndicator = escapeRegex(normalizedIndicator);
-  const isSingleWordOrAcronym = /^[a-z0-9]+$/i.test(normalizedIndicator);
-  const pattern = isSingleWordOrAcronym ? `\\b${escapedIndicator}\\b` : escapedIndicator;
+  const startsWithWordChar = /^[a-z0-9]/i.test(normalizedIndicator);
+  const endsWithWordChar = /[a-z0-9]$/i.test(normalizedIndicator);
+  const leftBoundary = startsWithWordChar ? "(?<![a-z0-9])" : "";
+  const rightBoundary = endsWithWordChar ? "(?![a-z0-9])" : "";
+  const pattern = `${leftBoundary}${escapedIndicator}${rightBoundary}`;
 
   return new RegExp(pattern, "i").test(normalizedText);
 }
@@ -983,7 +1000,7 @@ function detectStrongCategorySignal({ text, email, url, matchedIndicatorSet }) {
       minimumScore: 85,
       confidence: 90,
       flag: "Rental scam override: Rental language, overseas landlord story, inability to show the property, and direct payment request are present together.",
-      when: () => hasRentalLanguage(text) && hasOverseasLandlordSignal(text) && hasCannotShowPropertySignal(text) && hasRentalPaymentRequest(text, matchedIndicatorSet)
+      when: () => hasRentalContext(text) && hasOverseasLandlordSignal(text) && (hasCannotShowPropertySignal(text) || hasKeysByMailSignal(text) || hasRentalPaymentRequest(text, matchedIndicatorSet))
     },
     {
       name: "Romance Scam",
@@ -1006,7 +1023,7 @@ function hasArrestOrLegalThreat(text) {
 }
 
 function hasGiftCardOrWirePayment(text, matchedIndicatorSet) {
-  return hasIndicator(matchedIndicatorSet, ["gift card", "itunes gift card", "itunes card", "wire", "wire transfer"]) || matchesAnyIndicator(text, ["gift card", "itunes gift card", "itunes card", "wire", "wire transfer"]);
+  return hasIndicator(matchedIndicatorSet, ["gift card", "gift cards", "itunes gift card", "itunes card", "wire", "wire transfer"]) || matchesAnyIndicator(text, ["gift card", "gift cards", "itunes gift card", "itunes card", "wire", "wire transfer"]);
 }
 
 function hasLotteryWinClaim(text) {
@@ -1060,20 +1077,48 @@ function hasRemoteSupportOrInfectionSignal(text) {
   return matchesAnyIndicator(text, ["remote access", "remote support", "remove the virus remotely", "your computer has been infected", "virus detected", "do not shut down your computer", "your data is at risk"]);
 }
 
+function hasRentalContext(text) {
+  return countMatchedIndicators(text, ["apartment", "unit", "landlord", "lease", "listing", "for rent", "available for rent"]) >= 2;
+}
+
 function hasRentalLanguage(text) {
-  return matchesAnyIndicator(text, ["rental", "rent", "apartment", "unit", "landlord", "lease", "property"]);
+  return hasRentalContext(text);
 }
 
 function hasOverseasLandlordSignal(text) {
-  return matchesAnyIndicator(text, ["missionary in ghana", "abroad", "overseas"]);
+  return matchesAnyIndicator(text, ["missionary", "missionary in ghana", "ghana", "abroad", "overseas"]);
 }
 
 function hasCannotShowPropertySignal(text) {
-  return matchesAnyIndicator(text, ["cannot show the unit in person", "can't show the unit in person", "cannot show the property", "can't show the property", "will mail you the keys once you pay"]);
+  return matchesAnyIndicator(text, ["cannot show", "can't show", "cant show", "cannot show the unit in person", "can't show the unit in person", "cannot show the property", "can't show the property", "view in person"]);
 }
 
 function hasRentalPaymentRequest(text, matchedIndicatorSet) {
-  return hasIndicator(matchedIndicatorSet, ["zelle", "cash app", "wire", "wire transfer", "deposit", "first month and security deposit"]) || matchesAnyIndicator(text, ["zelle", "cash app", "wire", "wire transfer", "deposit", "first month and security deposit"]);
+  return hasIndicator(matchedIndicatorSet, ["pay first", "deposit before", "zelle before seeing", "before seeing", "before viewing", "first month and security deposit"]) || matchesAnyIndicator(text, ["pay first", "deposit before", "zelle before seeing", "before seeing", "before viewing", "first month and security deposit"]);
+}
+
+function hasKeysByMailSignal(text) {
+  return matchesAnyIndicator(text, ["mail the keys", "send the keys", "mail you the keys", "will mail you the keys once you pay"]);
+}
+
+function hasProfessionalRentalGmailSignal(text) {
+  return matchesIndicator(text, "gmail.com") && hasRentalContext(text);
+}
+
+function getRentalScamSignalCount(text) {
+  const signalGroups = [
+    hasOverseasLandlordSignal(text),
+    hasCannotShowPropertySignal(text),
+    hasRentalPaymentRequest(text, new Set()),
+    hasKeysByMailSignal(text),
+    hasProfessionalRentalGmailSignal(text)
+  ];
+
+  return signalGroups.filter(Boolean).length;
+}
+
+function hasRentalScamEvidence(text) {
+  return hasRentalContext(text) && hasOverseasLandlordSignal(text) && (hasCannotShowPropertySignal(text) || hasKeysByMailSignal(text) || hasRentalPaymentRequest(text, new Set()));
 }
 
 function hasRomanceOccupationSignal(text) {
@@ -1119,44 +1164,18 @@ function getCategoryRecommendation(categoryName) {
   return recommendations[categoryName] || "Verify this message through an official channel before responding, clicking links, or sending money or personal information.";
 }
 
-function enforceConfidenceRiskFloor(score, scamType, flags) {
-  const { name, confidence } = scamType;
-
-  if (confidence >= 70 && (name === "Romance Scam" || name === "Investment Scam") && score < 85) {
-    flags.push("Confidence-risk alignment: Romance and crypto investment scam confidence of 70% or higher requires a high-risk score of at least 85.");
-    return 85;
+function enforceMinimumEvidenceThreshold(score, matchedIndicatorSet, strongCategorySignal, flags) {
+  if (!strongCategorySignal && matchedIndicatorSet.size < 2 && score > 14) {
+    flags.push("Minimum evidence threshold: A single red flag was found, so the risk score stays low until another distinct indicator appears.");
+    return 14;
   }
 
-  if (confidence >= 70 && score < getCategoryMinimumScore(name)) {
-    const minimumScore = getCategoryMinimumScore(name);
-    flags.push(`Category risk floor: ${name} requires a high-risk score of at least ${minimumScore}.`);
-    return minimumScore;
+  if (strongCategorySignal || matchedIndicatorSet.size >= 2 || score <= 50) {
+    return score;
   }
 
-  if (confidence >= 90 && score < 80) {
-    flags.push("Confidence-risk alignment: A 90% or higher scam-type confidence requires a high-risk score of at least 80.");
-    return 80;
-  }
-
-  if (confidence >= 70 && score < 65) {
-    flags.push("Confidence-risk alignment: A 70% or higher scam-type confidence requires a high-risk score of at least 65.");
-    return 65;
-  }
-
-  return score;
-}
-
-function getCategoryMinimumScore(categoryName) {
-  const minimumScores = {
-    "Romance Scam": 85,
-    "Tech Support Scam": 85,
-    "Government Impersonation Scam": 90,
-    "Rental Scam": 85,
-    "Lottery and Advance Fee Scam": 90,
-    "Delivery and Smishing Scam": 85
-  };
-
-  return minimumScores[categoryName] || 65;
+  flags.push("Minimum evidence threshold: A single red flag was found, so the risk score is capped until another distinct indicator appears.");
+  return 50;
 }
 
 function determineScamCategory(text, caseType, matchedCategories, matchedIndicatorSet, strongCategorySignal) {
@@ -1221,7 +1240,7 @@ function determineScamCategory(text, caseType, matchedCategories, matchedIndicat
       score += 25;
     }
 
-    if (profile.name === "Rental Scam" && hasRentalLanguage(text) && hasOverseasLandlordSignal(text)) {
+    if (profile.name === "Rental Scam" && hasRentalScamEvidence(text)) {
       score += 25;
     }
 
@@ -1243,7 +1262,7 @@ function determineScamCategory(text, caseType, matchedCategories, matchedIndicat
 
   const best = categoryScores[0];
 
-  if (!best || best.score === 0) {
+  if (!best || best.score < 20) {
     return {
       name: "Unknown",
       confidence: 0,
